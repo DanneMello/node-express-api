@@ -1,15 +1,26 @@
+// Imports necessários 
 import express from "express";
-import { response } from "express";
+import db from "./config/dbConnect.js";
+import livros from "./models/Livro.js";
+
+// Caso der algum erro
+db.on("error", console.log.bind(console, "Erro de conexão"));
+
+// Caso conexão bem sucedida
+db.once("open", () => {
+    console.log("Conexão com o banco feita com sucesso!");
+});
+
 
 const app = express();
 app.use(express.json());
 
-// Atribuindo uma constante de livros para testes
+/* // Atribuindo uma constante de livros para testes
 const livros = [
     {"id": 1, "titulo": "O Senhor dos Anéis"},
     {"id": 2, "titulo": "A máquina que mudou o mundo"},
     {"id": 3, "titulo": "O Zé Pikeno Princípe"},
-];
+]; */
 
 // Exibe a página inicial
 app.get('/', (req, res) => {
@@ -18,7 +29,9 @@ app.get('/', (req, res) => {
 
 // Obtém todos os registros
 app.get('/livros', (req, res) => {
-    res.status(200).json(livros);
+    livros.find((err, livros) => {
+        res.status(200).json(livros);
+    });
 });
 
 // Busca um registro específico
