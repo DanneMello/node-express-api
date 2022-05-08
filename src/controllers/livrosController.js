@@ -8,9 +8,11 @@ class LivroController {
      * @param Response res 
      */
     static listarLivros = (req, res) => {
-        livros.find((err, livros) => {
-            res.status(200).json(livros);
-        });
+        livros.find()
+            .populate("autor")
+            .exec((err, livros) => {
+                res.status(200).json(livros);
+            });
     }
 
     /**
@@ -23,13 +25,15 @@ class LivroController {
         const {id} = req.params;
 
         // Busca o livro
-        livros.findById(id, (err, livros) => {
-            if (err) {
-                res.status(400).send({message: `Nenhum livro encontrado com o id informado - ${err.message}`});
-            } else {
-                res.status(200).send(livros || "Nenhum livro encontrado");
-            }
-        });
+        livros.findById(id)
+            .populate("autor", ["nome", "nacionalidade"])
+            .exec((err, livros) => {
+                if (err) {
+                    res.status(400).send({message: `Nenhum livro encontrado com o id informado - ${err.message}`});
+                } else {
+                    res.status(200).send(livros || "Nenhum livro encontrado");
+                }
+            });
     }
 
     /**
@@ -84,6 +88,26 @@ class LivroController {
                 res.status(200).send({message: "Livro removido com sucesso!"});
             } else {
                 res.status(500).send({message: `Erro ao tentar excluir o registro - ${err.message}`});
+            }
+        });
+    }
+
+    /**
+     * Retorna um livro pela editora
+     * 
+     * @param Request req 
+     * @param Response res 
+     */
+    static listarLivroPorEditora = (req, res) => {
+        const {editora} = req.query;
+
+        // Busca o livro pela editora informada
+        livros.find({"editora": editora}, {}, (err, livros) => {
+            if (!err) {
+                let livro = !livros || livros.length == 0 ? "Nenhum livro encontrado" : livros;
+                res.status(200).send(livro);
+            } else {
+                res.status(500).send(`Erro ao tentar localizar livro - ${err.message}`)
             }
         });
     }
